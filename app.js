@@ -48,6 +48,21 @@ window.updateDueManagerTab = function() {
 window.updateCustomerReportTab = function() {
   if (typeof updateReportTab === 'function') updateReportTab();
 };
+window.previewDataSection = function(sectionType) {
+  if (typeof previewDataSection === 'function') {
+    previewDataSection(sectionType);
+  } else {
+    console.error('previewDataSection is not defined yet');
+  }
+};
+
+window.downloadDataSectionPdf = function(sectionType) {
+  if (typeof downloadDataSectionPdf === 'function') {
+    downloadDataSectionPdf(sectionType);
+  } else {
+    console.error('downloadDataSectionPdf is not defined yet');
+  }
+};
 
 
 
@@ -3107,8 +3122,470 @@ function switchTab(targetTabId) {
     updateReportTab();
   } else if (targetTabId === 'tab-settings') {
     updateBackupTab();
+  } else if (targetTabId === 'tab-datacentre') {
+    updateDataCentreHub();
   }
 }
+
+// --- DATA CENTRE & SECTION-WISE PDF REPORT HUB ---
+let currentPreviewSection = null;
+
+function updateDataCentreHub() {
+  const history = getSavedHistory();
+  const products = getSavedProducts();
+  const dueMemos = history.filter(m => (parseFloat(m.due) || 0) > 0);
+  const isBn = state.lang === 'bn';
+
+  const elSalesCount = document.getElementById('dc-count-sales');
+  const elDueCount = document.getElementById('dc-count-due');
+  const elProdCount = document.getElementById('dc-count-products');
+  const elTrashCount = document.getElementById('dc-count-trash');
+  const elProfileCount = document.getElementById('dc-count-profile');
+
+  if (elSalesCount) elSalesCount.textContent = isBn ? `সর্বমোট ${toBanglaDigits(history.length)} টি মেমো` : `Total ${history.length} memos`;
+  if (elDueCount) elDueCount.textContent = isBn ? `বকেয়া রেকর্ড ${toBanglaDigits(dueMemos.length)} টি` : `${dueMemos.length} due records`;
+  if (elProdCount) elProdCount.textContent = isBn ? `সর্বমোট ${toBanglaDigits(products.length)} টি প্রোডাক্ট` : `Total ${products.length} products`;
+  if (elTrashCount) elTrashCount.textContent = isBn ? `রিসাইকেল বিন ${toBanglaDigits(cloudTrash.length)} টি` : `${cloudTrash.length} in trash`;
+  if (elProfileCount) elProfileCount.textContent = 'Jononi Enterprise & Healthcare';
+}
+
+function renderDataSectionHtml(sectionType) {
+  const history = getSavedHistory();
+  const products = getSavedProducts();
+  const dueMemos = history.filter(m => (parseFloat(m.due) || 0) > 0);
+  const isBn = state.lang === 'bn';
+  const profile = Storage.getJSON(STORAGE_KEYS.PROFILE, DEFAULT_PROFILE);
+  const nowDisplay = formatDateDisplay(getTodayDateString(), state.lang) + ' ' + new Date().toLocaleTimeString();
+
+  let title = '';
+  let sub = '';
+  let bodyContent = '';
+
+  if (sectionType === 'sales') {
+    title = '১. বিক্রয় ও মেমো ইতিহাস রিপোর্ট (Sales & Memo Ledger)';
+    sub = `মোট মেমো সংখ্যা: ${history.length} টি | প্রিন트 তারিখ: ${nowDisplay}`;
+    
+    let totalGross = 0;
+    let totalPaidSum = 0;
+    let totalDueSum = 0;
+
+    let rows = '';
+    if (history.length === 0) {
+      rows = `<tr><td colspan="7" style="text-align: center; color: #6b7280; padding: 24px;">কোনো মেমো পাওয়া যায়নি।</td></tr>`;
+    } else {
+      history.forEach((m, idx) => {
+        const grand = parseFloat(m.grandTotal) || 0;
+        const paid = parseFloat(m.paid) || 0;
+        const due = parseFloat(m.due) || 0;
+        totalGross += grand;
+        totalPaidSum += paid;
+        totalDueSum += due;
+
+        rows += `
+          <tr>
+            <td style="text-align: center; font-weight: 700;">${idx + 1}</td>
+            <td style="font-family: monospace; font-weight: 700;">#${escapeHtml(m.memoNo || '—')}</td>
+            <td>${formatDateDisplay(m.date, 'bn')}</td>
+            <td>
+              <div style="font-weight: 700;">${escapeHtml(m.customerName || 'নামবিহীন')}</div>
+              <div style="font-size: 11px; color: #6b7280;">📞 ${escapeHtml(m.customerMobile || 'নেই')}</div>
+            </td>
+            <td style="text-align: right; font-weight: 700;">${formatMoney(grand, 'bn')}</td>
+            <td style="text-align: right; color: #059669; font-weight: 600;">${formatMoney(paid, 'bn')}</td>
+            <td style="text-align: right; color: ${due > 0 ? '#dc2626' : '#059669'}; font-weight: 700;">${formatMoney(due, 'bn')}</td>
+          </tr>
+        `;
+      });
+    }
+
+    bodyContent = `
+      <div class="dr-summary-strip">
+        <div class="dr-summary-box">
+          <div class="dr-summary-label">মোট মেমো</div>
+          <div class="dr-summary-val">${history.length} টি</div>
+        </div>
+        <div class="dr-summary-box">
+          <div class="dr-summary-label">সর্বমোট বিক্রয়</div>
+          <div class="dr-summary-val">${formatMoney(totalGross, 'bn')}</div>
+        </div>
+        <div class="dr-summary-box">
+          <div class="dr-summary-label">সংগৃহীত নগদ</div>
+          <div class="dr-summary-val" style="color: #059669;">${formatMoney(totalPaidSum, 'bn')}</div>
+        </div>
+        <div class="dr-summary-box">
+          <div class="dr-summary-label">মোট বকেয়া</div>
+          <div class="dr-summary-val" style="color: #dc2626;">${formatMoney(totalDueSum, 'bn')}</div>
+        </div>
+      </div>
+
+      <table class="dr-table">
+        <thead>
+          <tr>
+            <th style="width: 45px; text-align: center;">ক্র.</th>
+            <th>মেমো নং</th>
+            <th>তারিখ</th>
+            <th>গ্রাহক ও মোবাইল</th>
+            <th style="text-align: right;">সর্বমোট বিল</th>
+            <th style="text-align: right;">জমা (Paid)</th>
+            <th style="text-align: right;">বকেয়া (Due)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4" style="text-align: right;">সর্বমোট যোগফল:</td>
+            <td style="text-align: right;">${formatMoney(totalGross, 'bn')}</td>
+            <td style="text-align: right; color: #059669;">${formatMoney(totalPaidSum, 'bn')}</td>
+            <td style="text-align: right; color: #dc2626;">${formatMoney(totalDueSum, 'bn')}</td>
+          </tr>
+        </tfoot>
+      </table>
+    `;
+  } else if (sectionType === 'due') {
+    title = '২. বকেয়া বিল ও লেজার রিপোর্ট (Due Bills Ledger)';
+    sub = `বকেয়া গ্রহীতা সংখ্যা: ${dueMemos.length} জন | প্রিন্ট তারিখ: ${nowDisplay}`;
+
+    let totalDueSum = 0;
+    let rows = '';
+    if (dueMemos.length === 0) {
+      rows = `<tr><td colspan="6" style="text-align: center; color: #6b7280; padding: 24px;">কোনো বকেয়া বিল নেই। সকল মেমো পরিশোধিত।</td></tr>`;
+    } else {
+      dueMemos.forEach((m, idx) => {
+        const due = parseFloat(m.due) || 0;
+        totalDueSum += due;
+
+        rows += `
+          <tr>
+            <td style="text-align: center; font-weight: 700;">${idx + 1}</td>
+            <td style="font-family: monospace; font-weight: 700;">#${escapeHtml(m.memoNo || '—')}</td>
+            <td>${formatDateDisplay(m.date, 'bn')}</td>
+            <td>
+              <div style="font-weight: 700;">${escapeHtml(m.customerName || 'নামবিহীন')}</div>
+              <div style="font-size: 11px; color: #6b7280;">📞 ${escapeHtml(m.customerMobile || 'নেই')}</div>
+            </td>
+            <td style="text-align: right;">${formatMoney(m.grandTotal, 'bn')}</td>
+            <td style="text-align: right; color: #dc2626; font-weight: 800;">${formatMoney(due, 'bn')}</td>
+          </tr>
+        `;
+      });
+    }
+
+    bodyContent = `
+      <div class="dr-summary-strip">
+        <div class="dr-summary-box">
+          <div class="dr-summary-label">বকেয়া মেমো</div>
+          <div class="dr-summary-val" style="color: #dc2626;">${dueMemos.length} টি</div>
+        </div>
+        <div class="dr-summary-box">
+          <div class="dr-summary-label">মোট পাওনা বকেয়া</div>
+          <div class="dr-summary-val" style="color: #dc2626;">${formatMoney(totalDueSum, 'bn')}</div>
+        </div>
+      </div>
+
+      <table class="dr-table">
+        <thead>
+          <tr>
+            <th style="width: 45px; text-align: center;">ক্র.</th>
+            <th>মেমো নং</th>
+            <th>তারিখ</th>
+            <th>গ্রাহক ও মোবাইল</th>
+            <th style="text-align: right;">সর্বমোট বিল</th>
+            <th style="text-align: right; color: #f87171;">বকেয়া পরিমাণ</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="5" style="text-align: right;">মোট বকেয়া পাওনা:</td>
+            <td style="text-align: right; color: #dc2626;">${formatMoney(totalDueSum, 'bn')}</td>
+          </tr>
+        </tfoot>
+      </table>
+    `;
+  } else if (sectionType === 'products') {
+    title = '৩. প্রোডাক্ট ক্যাটালগ ও মূল্য তালিকা (Product Catalog & Rates)';
+    sub = `মোট প্রোডাক্ট সংখ্যা: ${products.length} টি | প্রিন্ট তারিখ: ${nowDisplay}`;
+
+    let rows = '';
+    if (products.length === 0) {
+      rows = `<tr><td colspan="5" style="text-align: center; color: #6b7280; padding: 24px;">কোনো প্রোডাক্ট ক্যাটালগ নেই।</td></tr>`;
+    } else {
+      products.forEach((p, idx) => {
+        rows += `
+          <tr>
+            <td style="text-align: center; font-weight: 700;">${idx + 1}</td>
+            <td style="font-weight: 700;">${escapeHtml(p.name)}</td>
+            <td>${escapeHtml(p.category || 'সাধারণ')}</td>
+            <td style="text-align: right; font-weight: 700; color: #0f7a4a;">${formatMoney(p.price, 'bn')}</td>
+            <td style="text-align: center;">${escapeHtml(p.unit || 'Pcs')}</td>
+          </tr>
+        `;
+      });
+    }
+
+    bodyContent = `
+      <table class="dr-table">
+        <thead>
+          <tr>
+            <th style="width: 45px; text-align: center;">ক্র.</th>
+            <th>প্রোডাক্টের নাম</th>
+            <th>জেনেরিক / ক্যাটাগরি</th>
+            <th style="text-align: right;">নির্ধারিত মূল্য (টাকা)</th>
+            <th style="width: 90px; text-align: center;">ইউনিট</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    `;
+  } else if (sectionType === 'top') {
+    title = '৪. সর্বাধিক বিক্রীত প্রোডাক্ট অ্যানালিটিক্স (Top Selling Products)';
+    sub = `বিক্রয় বিশ্লেষণ রিপোর্ট | প্রিন্ট তারিখ: ${nowDisplay}`;
+
+    const productMap = {};
+    history.forEach((memo) => {
+      if (Array.isArray(memo.items)) {
+        memo.items.forEach((item) => {
+          const name = (item.name || '').trim();
+          const qty = parseFloat(item.qty) || 0;
+          const price = parseFloat(item.price) || 0;
+          if (name && qty > 0) {
+            if (!productMap[name]) productMap[name] = { qty: 0, sales: 0 };
+            productMap[name].qty += qty;
+            productMap[name].sales += qty * price;
+          }
+        });
+      }
+    });
+
+    const sorted = Object.entries(productMap)
+      .map(([name, data]) => ({ name, ...data }))
+      .sort((a, b) => b.qty - a.qty);
+
+    let rows = '';
+    if (sorted.length === 0) {
+      rows = `<tr><td colspan="4" style="text-align: center; color: #6b7280; padding: 24px;">কোনো বিক্রির তথ্য নেই।</td></tr>`;
+    } else {
+      sorted.forEach((p, idx) => {
+        rows += `
+          <tr>
+            <td style="text-align: center; font-weight: 700;">#${idx + 1}</td>
+            <td style="font-weight: 700;">${escapeHtml(p.name)}</td>
+            <td style="text-align: center; font-weight: 700; color: #0284c7;">${p.qty} টি</td>
+            <td style="text-align: right; font-weight: 800; color: #0f7a4a;">${formatMoney(p.sales, 'bn')}</td>
+          </tr>
+        `;
+      });
+    }
+
+    bodyContent = `
+      <table class="dr-table">
+        <thead>
+          <tr>
+            <th style="width: 60px; text-align: center;">র‍্যাংক</th>
+            <th>প্রোডাক্টের নাম</th>
+            <th style="width: 120px; text-align: center;">বিক্রিত সংখ্যা</th>
+            <th style="width: 140px; text-align: right;">মোট আয়</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    `;
+  } else if (sectionType === 'trash') {
+    title = '৫. মুছে ফেলা মেমো রেকর্ড (Recycle Bin Audit)';
+    sub = `রিসাইকেল বিনের সংরক্ষিত রেকর্ড | প্রিন্ট তারিখ: ${nowDisplay}`;
+
+    let rows = '';
+    if (cloudTrash.length === 0) {
+      rows = `<tr><td colspan="5" style="text-align: center; color: #6b7280; padding: 24px;">রিসাইকেল বিন খালি আছে।</td></tr>`;
+    } else {
+      cloudTrash.forEach((t, idx) => {
+        const m = t.memoData || t;
+        rows += `
+          <tr>
+            <td style="text-align: center; font-weight: 700;">${idx + 1}</td>
+            <td style="font-family: monospace; font-weight: 700;">#${escapeHtml(m.memoNo || '—')}</td>
+            <td>${formatDateDisplay(m.date, 'bn')}</td>
+            <td>${escapeHtml(m.customerName || 'নামবিহীন')}</td>
+            <td style="text-align: right;">${formatMoney(m.grandTotal, 'bn')}</td>
+          </tr>
+        `;
+      });
+    }
+
+    bodyContent = `
+      <table class="dr-table">
+        <thead>
+          <tr>
+            <th style="width: 45px; text-align: center;">ক্র.</th>
+            <th>মেমো নং</th>
+            <th>তারিখ</th>
+            <th>গ্রাহক</th>
+            <th style="text-align: right;">সর্বমোট বিল</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    `;
+  } else if (sectionType === 'profile') {
+    title = '৬. ফার্মেসি প্রোফাইল ও অফিশিয়াল তথ্য (Pharmacy Profile)';
+    sub = `অফিশিয়াল সার্টিফিকেট ইনফো | প্রিন্ট তারিখ: ${nowDisplay}`;
+
+    bodyContent = `
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">
+          <span style="font-weight: 700; color: #4b5563;">প্রতিষ্ঠানের নাম (Shop Name):</span>
+          <span style="font-weight: 800; color: #0f7a4a;">Jononi Enterprise And Healthcare</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">
+          <span style="font-weight: 700; color: #4b5563;">ফার্মাসিস্ট / স্বত্বাধিকারী:</span>
+          <span style="font-weight: 700; color: #111827;">${escapeHtml(profile.pharmacistName || 'মো: হাবিবুর রহমান')}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">
+          <span style="font-weight: 700; color: #4b5563;">ড্রাগ লাইসেন্স নং:</span>
+          <span style="font-family: monospace; font-weight: 700;">${escapeHtml(profile.dlNo || 'GAZI-DH/18429')}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">
+          <span style="font-weight: 700; color: #4b5563;">ট্রেড লাইসেন্স নং:</span>
+          <span style="font-family: monospace; font-weight: 700;">${escapeHtml(profile.tradeNo || 'TRAD/GZP/04821')}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">
+          <span style="font-weight: 700; color: #4b5563;">অফিশিয়াল মোবাইল:</span>
+          <span style="font-weight: 700;">+880 1848-383410</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="font-weight: 700; color: #4b5563;">ঠিকানা (Address):</span>
+          <span style="font-weight: 700;">Address: 27 Road, Tongi, Gazipur</span>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="dr-header-band">
+      <div>
+        <div class="dr-brand-title">Jononi Enterprise And Healthcare</div>
+        <div class="dr-brand-sub">Address: 27 Road, Tongi, Gazipur | Mobile: +880 1848-383410</div>
+        <div class="dr-brand-sub">Firebase Project: jononi-pharmacy</div>
+      </div>
+      <div class="dr-report-badge">
+        <div class="dr-report-title">${escapeHtml(title)}</div>
+        <div class="dr-report-meta">${escapeHtml(sub)}</div>
+      </div>
+    </div>
+
+    ${bodyContent}
+
+    <div class="dr-footer">
+      <div>
+        <div style="font-weight: 700; color: #111827;">Jononi Pharmacy Data Centre System</div>
+        <div>এই রিপোর্টটি স্বয়ংক্রিয়ভাবে গুগল ফায়ারবেস ক্লাউড থেকে প্রস্তুতকৃত।</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="border-top: 1px dashed #6b7280; width: 160px; margin-bottom: 4px;"></div>
+        <div style="font-weight: 700; color: #4b5563;">কর্তৃপক্ষের স্বাক্ষর</div>
+      </div>
+    </div>
+  `;
+}
+
+function previewDataSection(sectionType) {
+  currentPreviewSection = sectionType;
+  const modal = document.getElementById('data-report-modal');
+  const paper = document.getElementById('data-report-paper');
+  const titleEl = document.getElementById('data-report-modal-title');
+
+  if (!modal || !paper) return;
+
+  const titles = {
+    sales: 'বিক্রয় ও মেমো রিপোর্ট প্রিভিউ',
+    due: 'বকেয়া বিল লেজার প্রিভিউ',
+    products: 'প্রোডাক্ট ক্যাটালগ প্রিভিউ',
+    top: 'সর্বাধিক বিক্রীত প্রোডাক্ট প্রিভিউ',
+    trash: 'রিসাইকেল বিন রেকর্ড প্রিভিউ',
+    profile: 'ফার্মেসি প্রোফাইল প্রিভিউ'
+  };
+
+  if (titleEl) titleEl.textContent = titles[sectionType] || 'ডেটা রিপোর্ট প্রিভিউ';
+  paper.innerHTML = renderDataSectionHtml(sectionType);
+  modal.classList.add('active');
+}
+
+async function downloadDataSectionPdf(sectionType) {
+  showToast('পিডিএফ ফাইল তৈরি হচ্ছে...', 'success');
+  
+  // Create a temporary hidden container to render HTML cleanly
+  const temp = document.createElement('div');
+  temp.style.position = 'fixed';
+  temp.style.left = '-9999px';
+  temp.style.top = '0';
+  temp.style.width = '820px';
+  temp.style.backgroundColor = '#ffffff';
+  temp.style.zIndex = '-1000';
+  temp.innerHTML = `<div class="data-report-paper" style="box-shadow: none;">${renderDataSectionHtml(sectionType)}</div>`;
+  document.body.appendChild(temp);
+
+  try {
+    const canvas = await window.html2canvas(temp, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false
+    });
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    const imgWidth = 210;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
+
+    const fileName = `Jononi-Pharmacy-${sectionType}-Report-${getTodayDateString()}.pdf`;
+    pdf.save(fileName);
+    showToast('পিডিএফ ফাইল সফলভাবে ডাউনলোড হয়েছে!', 'success');
+  } catch (err) {
+    console.error('PDF generation error:', err);
+    showToast('পিডিএফ তৈরিতে সমস্যা হয়েছে।', 'danger');
+  } finally {
+    temp.remove();
+  }
+}
+
+// Wire Data Centre modal close & download buttons on DOM load
+document.addEventListener('DOMContentLoaded', () => {
+  const dcCloseBtn = document.getElementById('data-report-close-btn');
+  const dcModal = document.getElementById('data-report-modal');
+  const dcDownloadBtn = document.getElementById('btn-data-report-download');
+  const dcExportAllBtn = document.getElementById('btn-dc-export-all');
+
+  if (dcCloseBtn && dcModal) {
+    dcCloseBtn.addEventListener('click', () => dcModal.classList.remove('active'));
+  }
+  if (dcDownloadBtn) {
+    dcDownloadBtn.addEventListener('click', () => {
+      if (currentPreviewSection) downloadDataSectionPdf(currentPreviewSection);
+    });
+  }
+  if (dcExportAllBtn) {
+    dcExportAllBtn.addEventListener('click', async () => {
+      showToast('সকল সেকশনের ব্যাকআপ ফাইল প্রস্তুত হচ্ছে...', 'success');
+      handleBackupJson();
+    });
+  }
+});
 
 // --- PWA & SERVICE WORKER SETUP ---
 function initPWA() {
