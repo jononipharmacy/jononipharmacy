@@ -1,0 +1,157 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Catch-all Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(authorId) {
+      return isVerified() && authorId == request.auth.uid;
+    }
+
+    function isAdmin() {
+      return isVerified() && request.auth.token.email == 'jesweettoptens@gmail.com';
+    }
+
+    // Validation blueprints
+    function isValidMemo(data) {
+      return data.authorId is string &&
+             data.authorId.size() <= 128 &&
+             data.authorId == request.auth.uid &&
+             data.memoNo is string &&
+             data.memoNo.size() > 0 &&
+             data.memoNo.size() <= 50 &&
+             data.date is string &&
+             data.date.size() <= 20 &&
+             (!('customerName' in data) || (data.customerName is string && data.customerName.size() <= 150)) &&
+             (!('customerMobile' in data) || (data.customerMobile is string && data.customerMobile.size() <= 30)) &&
+             (!('customerAddress' in data) || (data.customerAddress is string && data.customerAddress.size() <= 250)) &&
+             (!('paymentMethod' in data) || (data.paymentMethod is string && data.paymentMethod.size() <= 30)) &&
+             (!('items' in data) || (data.items is list && data.items.size() <= 200)) &&
+             data.grandTotal is number &&
+             data.grandTotal >= 0;
+    }
+
+    function isValidProduct(data) {
+      return data.authorId is string &&
+             data.authorId.size() <= 128 &&
+             data.authorId == request.auth.uid &&
+             data.name is string &&
+             data.name.size() > 0 &&
+             data.name.size() <= 150 &&
+             (!('generic' in data) || (data.generic is string && data.generic.size() <= 150)) &&
+             (!('strength' in data) || (data.strength is string && data.strength.size() <= 60)) &&
+             (!('category' in data) || (data.category is string && data.category.size() <= 60)) &&
+             (!('unit' in data) || (data.unit is string && data.unit.size() <= 30)) &&
+             (!('rack' in data) || (data.rack is string && data.rack.size() <= 60)) &&
+             (!('company' in data) || (data.company is string && data.company.size() <= 120)) &&
+             (!('note' in data) || (data.note is string && data.note.size() <= 250)) &&
+             data.unitPrice is number &&
+             data.unitPrice >= 0;
+    }
+
+    function isValidCounter(data) {
+      return data.authorId is string &&
+             data.authorId.size() <= 128 &&
+             data.authorId == request.auth.uid &&
+             data.dateCode is string &&
+             data.dateCode.size() <= 20 &&
+             data.counter is number &&
+             data.counter >= 0;
+    }
+
+    function isValidProfile(data) {
+      return data.authorId is string &&
+             data.authorId.size() <= 128 &&
+             data.authorId == request.auth.uid &&
+             data.pharmacyName is string &&
+             data.pharmacyName.size() <= 150 &&
+             (!('tagline' in data) || (data.tagline is string && data.tagline.size() <= 200)) &&
+             (!('address' in data) || (data.address is string && data.address.size() <= 250)) &&
+             (!('mobile' in data) || (data.mobile is string && data.mobile.size() <= 50)) &&
+             (!('email' in data) || (data.email is string && data.email.size() <= 100)) &&
+             (!('dlNo' in data) || (data.dlNo is string && data.dlNo.size() <= 80)) &&
+             (!('footerWish' in data) || (data.footerWish is string && data.footerWish.size() <= 200)) &&
+             (!('customLogo' in data) || (data.customLogo is string && data.customLogo.size() <= 500000));
+    }
+
+    function isValidTrash(data) {
+      return data.authorId is string &&
+             data.authorId.size() <= 128 &&
+             data.authorId == request.auth.uid &&
+             data.memoId is string &&
+             data.memoId.size() <= 128;
+    }
+
+    // Collections
+    match /memos/{memoId} {
+      allow get: if isValidId(memoId) && (isOwner(existing().authorId) || isAdmin());
+      allow list: if isVerified() && resource.data.authorId == request.auth.uid;
+      allow create: if isValidId(memoId) && isVerified() && isValidMemo(incoming());
+      allow update: if isValidId(memoId) && isVerified() && isValidMemo(incoming()) &&
+                      incoming().authorId == existing().authorId &&
+                      (isOwner(existing().authorId) || isAdmin());
+      allow delete: if isValidId(memoId) && (isOwner(existing().authorId) || isAdmin());
+    }
+
+    match /products/{productId} {
+      allow get: if isValidId(productId) && (isOwner(existing().authorId) || isAdmin());
+      allow list: if isVerified() && resource.data.authorId == request.auth.uid;
+      allow create: if isValidId(productId) && isVerified() && isValidProduct(incoming());
+      allow update: if isValidId(productId) && isVerified() && isValidProduct(incoming()) &&
+                      incoming().authorId == existing().authorId &&
+                      (isOwner(existing().authorId) || isAdmin());
+      allow delete: if isValidId(productId) && (isOwner(existing().authorId) || isAdmin());
+    }
+
+    match /counters/{counterId} {
+      allow get: if isValidId(counterId) && (isOwner(existing().authorId) || isAdmin());
+      allow list: if isVerified() && resource.data.authorId == request.auth.uid;
+      allow create: if isValidId(counterId) && isVerified() && isValidCounter(incoming());
+      allow update: if isValidId(counterId) && isVerified() && isValidCounter(incoming()) &&
+                      incoming().authorId == existing().authorId &&
+                      (isOwner(existing().authorId) || isAdmin());
+      allow delete: if isValidId(counterId) && (isOwner(existing().authorId) || isAdmin());
+    }
+
+    match /profiles/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if isVerified() && resource.data.authorId == request.auth.uid;
+      allow create, update: if isValidId(userId) && userId == request.auth.uid && isVerified() && isValidProfile(incoming());
+      allow delete: if isValidId(userId) && (isOwner(userId) || isAdmin());
+    }
+
+    match /trash/{trashId} {
+      allow get: if isValidId(trashId) && (isOwner(existing().authorId) || isAdmin());
+      allow list: if isVerified() && resource.data.authorId == request.auth.uid;
+      allow create: if isValidId(trashId) && isVerified() && isValidTrash(incoming());
+      allow update: if isValidId(trashId) && isVerified() && isValidTrash(incoming()) &&
+                      incoming().authorId == existing().authorId &&
+                      (isOwner(existing().authorId) || isAdmin());
+      allow delete: if isValidId(trashId) && (isOwner(existing().authorId) || isAdmin());
+    }
+  }
+}

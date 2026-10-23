@@ -1,0 +1,8 @@
+{
+  "name": "Jononi Pharmacy",
+  "description": "Digital cash memo and invoice maker for Jononi Enterprise And Healthcare pharmacy with bilingual Bangla and English memos, local history, backup, and PDF/PNG export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

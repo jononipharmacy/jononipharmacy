@@ -1,0 +1,116 @@
+{
+  "entities": {
+    "Memo": {
+      "title": "Memo",
+      "description": "A digital cash memo record for Jononi Pharmacy",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "memoNo": { "type": "string", "maxLength": 50 },
+        "date": { "type": "string", "maxLength": 20 },
+        "customerName": { "type": "string", "maxLength": 150 },
+        "customerMobile": { "type": "string", "maxLength": 30 },
+        "customerAddress": { "type": "string", "maxLength": 250 },
+        "items": { "type": "array", "description": "Array of purchased medicine items" },
+        "subtotal": { "type": "number" },
+        "discount": { "type": "number" },
+        "grandTotal": { "type": "number" },
+        "paid": { "type": "number" },
+        "due": { "type": "number" },
+        "paymentMethod": { "type": "string", "maxLength": 30 },
+        "authorId": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "maxLength": 50 },
+        "updatedAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["memoNo", "date", "authorId", "grandTotal"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Medicine or healthcare product in inventory catalog",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 150 },
+        "generic": { "type": "string", "maxLength": 150 },
+        "strength": { "type": "string", "maxLength": 60 },
+        "category": { "type": "string", "maxLength": 60 },
+        "unit": { "type": "string", "maxLength": 30 },
+        "unitPrice": { "type": "number" },
+        "buyPrice": { "type": "number" },
+        "stock": { "type": "number" },
+        "minStock": { "type": "number" },
+        "rack": { "type": "string", "maxLength": 60 },
+        "company": { "type": "string", "maxLength": 120 },
+        "note": { "type": "string", "maxLength": 250 },
+        "authorId": { "type": "string", "maxLength": 128 },
+        "updatedAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["name", "authorId", "unitPrice"]
+    },
+    "Counter": {
+      "title": "Counter",
+      "description": "Daily sequential memo counter tracking per date code",
+      "type": "object",
+      "properties": {
+        "dateCode": { "type": "string", "maxLength": 20 },
+        "counter": { "type": "number" },
+        "authorId": { "type": "string", "maxLength": 128 },
+        "updatedAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["dateCode", "counter", "authorId"]
+    },
+    "Profile": {
+      "title": "Profile",
+      "description": "Pharmacy profile configuration, banner info, and custom logo",
+      "type": "object",
+      "properties": {
+        "pharmacyName": { "type": "string", "maxLength": 150 },
+        "tagline": { "type": "string", "maxLength": 200 },
+        "address": { "type": "string", "maxLength": 250 },
+        "mobile": { "type": "string", "maxLength": 50 },
+        "email": { "type": "string", "maxLength": 100 },
+        "dlNo": { "type": "string", "maxLength": 80 },
+        "footerWish": { "type": "string", "maxLength": 200 },
+        "customLogo": { "type": "string", "maxLength": 500000 },
+        "authorId": { "type": "string", "maxLength": 128 },
+        "updatedAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["pharmacyName", "authorId"]
+    },
+    "TrashMemo": {
+      "title": "TrashMemo",
+      "description": "Deleted cash memo stored for recovery",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "memoId": { "type": "string", "maxLength": 128 },
+        "memoData": { "type": "object", "description": "Archived memo details" },
+        "deletedAt": { "type": "string", "maxLength": 50 },
+        "authorId": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["memoId", "authorId"]
+    }
+  },
+  "firestore": {
+    "/memos/{memoId}": {
+      "schema": "Memo",
+      "description": "Collection of saved cash memos"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Pharmacy medicine and healthcare products inventory"
+    },
+    "/counters/{counterId}": {
+      "schema": "Counter",
+      "description": "Daily sequential memo counter tracking documents"
+    },
+    "/profiles/{userId}": {
+      "schema": "Profile",
+      "description": "Pharmacy owner profile and custom settings keyed by user id"
+    },
+    "/trash/{trashId}": {
+      "schema": "TrashMemo",
+      "description": "Soft deleted cash memos for undo or permanent purging"
+    }
+  }
+}

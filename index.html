@@ -1,0 +1,1968 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Jononi Pharmacy - Digital Cash Memo Maker</title>
+  <meta name="description" content="Digital cash memo and invoice maker for Jononi Enterprise And Healthcare pharmacy with bilingual Bangla and English memos, local history, backup, and PDF/PNG export." />
+  <meta property="og:title" content="Jononi Pharmacy - Digital Cash Memo Maker" />
+  <meta property="og:description" content="Digital cash memo and invoice maker for Jononi Enterprise And Healthcare pharmacy." />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#0f7a4a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Jononi" />
+
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+
+  <!-- Google Fonts: Hind Siliguri, Noto Sans Bengali, Inter with Bengali script support -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap&subset=bengali,latin" rel="stylesheet" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/style.css" />
+
+  <!-- Pinned CDN Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <!-- Offline Alert Banner -->
+  <div id="offline-banner" class="offline-banner">
+    অফলাইন মোড সক্রিয় — ক্যাশ মেমো অফলাইনেও ব্যবহার করা যাবে।
+  </div>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div style="display: flex; align-items: center; gap: 0.6rem;">
+        <!-- Sidebar Toggle Button -->
+        <button type="button" id="btn-sidebar-toggle" class="icon-btn" aria-label="Toggle Sidebar Menu" title="সাইডবার মেনু">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+
+        <div class="brand-wrapper" id="header-brand-link" role="button" tabindex="0" title="হোম পেজে যান (নতুন মেমো)" aria-label="হোম পেজে যান">
+          <div id="header-logo-container" class="brand-logo-frame">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0f7a4a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="4" />
+              <line x1="12" y1="8" x2="12" y2="16" />
+              <line x1="8" y1="12" x2="16" y2="12" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="brand-title">Jononi Pharmacy</h1>
+            <div class="brand-subtitle">Jononi Enterprise And Healthcare</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <!-- Language Switcher: Bangla Memo | English Memo -->
+        <div class="lang-toggle-group" role="group" aria-label="Language Mode">
+          <button type="button" id="lang-bn-btn" class="lang-btn active">Bn</button>
+          <button type="button" id="lang-en-btn" class="lang-btn">En</button>
+        </div>
+
+        <!-- PWA Install Button -->
+        <button type="button" id="pwa-install-btn" class="btn btn-outline btn-sm" style="display: none;" title="অ্যাপ ইনস্টল করুন">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span id="pwa-btn-label">ইনস্টল</span>
+        </button>
+
+        <button type="button" id="btn-reload-app" class="icon-btn" title="রিলোড">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+          </svg>
+        </button>
+
+        <!-- Dark / Light Theme Toggle -->
+        <button type="button" id="theme-toggle-btn" class="icon-btn" aria-label="Toggle Theme" title="থিম পরিবর্তন">
+          <svg id="theme-sun-icon" style="display:none;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5" />
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+          </svg>
+          <svg id="theme-moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- App Shell: Collapsible Sidebar + Main Content -->
+  <div class="app-shell" id="app-shell">
+    <!-- Backdrop for Mobile Drawer -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <!-- Collapsible Sidebar -->
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Sidebar Menu">
+      <div class="sidebar-content">
+        <!-- Sidebar Brand / Profile Badge Card -->
+        <div class="sidebar-pharmacy-card">
+          <div class="sidebar-avatar" id="sidebar-logo-container">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0f7a4a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="4" />
+              <line x1="12" y1="8" x2="12" y2="16" />
+              <line x1="8" y1="12" x2="16" y2="12" />
+            </svg>
+          </div>
+          <div class="sidebar-info">
+            <div class="sidebar-info-name">Jononi Pharmacy</div>
+            <div class="sidebar-info-sub">Tongi, Gazipur</div>
+          </div>
+          <button type="button" id="btn-sidebar-collapse" class="sidebar-pin-btn" title="সাইডবার কলাপ্স করুন">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Sidebar Navigation Items -->
+        <div class="sidebar-nav-group">
+          <div class="sidebar-section-title">Menu & Features</div>
+          <nav class="sidebar-nav">
+            <!-- Home / Dashboard -->
+            <button type="button" class="sidebar-nav-item active" data-tab="tab-home">
+              <span class="nav-icon">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+              </span>
+              <span class="nav-text" id="sb-lbl-home">Home / Dashboard</span>
+            </button>
+
+            <!-- New Memo -->
+            <button type="button" class="sidebar-nav-item" data-tab="tab-editor">
+              <span class="nav-icon">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="12" y1="18" x2="12" y2="12" />
+                  <line x1="9" y1="15" x2="15" y2="15" />
+                </svg>
+              </span>
+              <span class="nav-text" id="sb-lbl-new-memo">New Memo</span>
+            </button>
+
+            <!-- History -->
+            <button type="button" class="sidebar-nav-item" data-tab="tab-history">
+              <span class="nav-icon">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </span>
+              <span class="nav-text" id="sb-lbl-history">History</span>
+              <span class="sidebar-badge" id="sidebar-history-count">0</span>
+            </button>
+
+            <!-- Products Management -->
+            <button type="button" class="sidebar-nav-item" data-tab="tab-products">
+              <span class="nav-icon">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+              </span>
+              <span class="nav-text" id="sb-lbl-products">Products Management</span>
+              <span class="sidebar-badge" id="sidebar-products-count">0</span>
+            </button>
+
+            <!-- Profile -->
+            <button type="button" class="sidebar-nav-item" data-tab="tab-profile">
+              <span class="nav-icon">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </span>
+              <span class="nav-text" id="sb-lbl-profile">Profile</span>
+            </button>
+
+            <!-- Report -->
+            <button type="button" class="sidebar-nav-item" data-tab="tab-report">
+              <span class="nav-icon">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="20" x2="18" y2="10" />
+                  <line x1="12" y1="20" x2="12" y2="4" />
+                  <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+              </span>
+              <span class="nav-text" id="sb-lbl-report">Report</span>
+            </button>
+            
+            <!-- Recycle Bin -->
+            <button type="button" class="sidebar-nav-item" data-tab="tab-trash">
+              <span class="nav-icon">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </span>
+              <span class="nav-text" id="sb-lbl-trash">Recycle Bin</span>
+              <span class="sidebar-badge" id="sidebar-trash-count">0</span>
+            </button>
+
+            <!-- Setting -->
+            <button type="button" class="sidebar-nav-item" data-tab="tab-settings">
+              <span class="nav-icon">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+              </span>
+              <span class="nav-text" id="sb-lbl-settings">Settings</span>
+            </button>
+
+            <!-- App info -->
+            <button type="button" class="sidebar-nav-item" data-tab="tab-appinfo">
+              <span class="nav-icon">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+              </span>
+              <span class="nav-text" id="sb-lbl-appinfo">App Info</span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- Sidebar Footer Status -->
+        <div class="sidebar-footer">
+          <div class="sidebar-status-box">
+            <div class="status-indicator-dot"></div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.8rem;">Jononi Pharmacy v2.5</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 1px;">
+                Developed By <a href="https://www.facebook.com/iam.zubayerahmedr" target="_blank" rel="noopener noreferrer" style="color: #065f46; font-weight: 700; text-decoration: underline;">Zubayer Ahmedr</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area Wrapper -->
+    <div class="app-main-wrapper">
+      <main class="app-main">
+    <!-- TAB 0: Home / Professional Dashboard -->
+    <section id="tab-home" class="tab-pane active">
+      <div class="home-dashboard-wrapper">
+        <!-- Welcome Hero Banner Card -->
+        <div class="card home-hero-card">
+          <div style="position: relative; z-index: 2;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.85rem; flex-wrap: wrap;">
+              <div style="width: 56px; height: 56px; background: rgba(255, 255, 255, 0.2); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); flex-shrink: 0;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="4" />
+                  <line x1="12" y1="8" x2="12" y2="16" />
+                  <line x1="8" y1="12" x2="16" y2="12" />
+                </svg>
+              </div>
+              <div>
+                <h1 class="home-hero-title">Jononi Pharmacy</h1>
+                <p class="home-hero-sub">Jononi Enterprise And Healthcare • Tongi, Gazipur</p>
+              </div>
+            </div>
+            <p class="home-hero-desc">
+              ডিজিটাল ক্যাশ মেমো প্রস্তুতকারক, সেলস হিস্ট্রি, প্রোডাক্ট স্টক ও ফার্মেসি ম্যানেজমেন্ট সিস্টেম। খুব সহজেই প্রফেশনাল মেমো তৈরি করুন এবং প্রিন্ট বা শেয়ার করুন।
+            </p>
+            <div style="display: flex; gap: 0.85rem; flex-wrap: wrap; align-items: center;">
+              <button type="button" id="btn-hero-new-memo" class="btn" style="background: #ffffff; color: var(--primary); font-weight: 800; font-size: 1rem; padding: 0.75rem 1.5rem; border-radius: var(--radius-md); box-shadow: 0 4px 14px rgba(0,0,0,0.15); display: inline-flex; align-items: center; gap: 0.5rem; transition: transform 0.2s;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span>New Memo (নতুন মেমো)</span>
+              </button>
+              <button type="button" class="btn btn-outline" data-tab-shortcut="tab-history" style="border-color: rgba(255,255,255,0.6); color: #fff; font-weight: 700; padding: 0.75rem 1.25rem; border-radius: var(--radius-md); display: inline-flex; align-items: center; gap: 0.5rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                <span>হিস্ট্রি দেখুন</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Statistics Grid -->
+        <div class="home-stats-grid">
+          <div class="home-stat-card">
+            <div class="home-stat-icon-wrap" style="background: var(--primary-light); color: var(--primary);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+            </div>
+            <div style="min-width: 0; flex: 1;">
+              <div style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">সংরক্ষিত মেমো</div>
+              <div id="home-stat-memos" class="home-stat-val" style="color: var(--text-main);">০</div>
+            </div>
+          </div>
+
+          <div class="home-stat-card">
+            <div class="home-stat-icon-wrap" style="background: var(--success-light); color: var(--success);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23" />
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+              </svg>
+            </div>
+            <div style="min-width: 0; flex: 1;">
+              <div style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">মোট বিক্রয় (টাকা)</div>
+              <div id="home-stat-sales" class="home-stat-val" style="color: var(--primary);">৳০.০০</div>
+            </div>
+          </div>
+
+          <div class="home-stat-card">
+            <div class="home-stat-icon-wrap" style="background: rgba(59, 130, 246, 0.12); color: #3b82f6;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+              </svg>
+            </div>
+            <div style="min-width: 0; flex: 1;">
+              <div style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">প্রোডাক্ট তালিকা</div>
+              <div id="home-stat-products" class="home-stat-val" style="color: var(--text-main);">০</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Navigation Shortcuts Card -->
+        <div class="card" style="padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;">
+          <h2 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <span>দ্রুত মেনু ও শর্টকাট (Quick Actions)</span>
+          </h2>
+          <div class="home-shortcuts-grid">
+            <button type="button" class="home-shortcut-btn" data-tab-shortcut="tab-editor">
+              <span style="background: var(--primary-light); color: var(--primary); padding: 0.5rem; border-radius: 8px; display: inline-flex;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+              </span>
+              <div>
+                <div class="home-shortcut-title">New Memo</div>
+                <div class="home-shortcut-sub">নতুন ক্যাশ মেমো তৈরি</div>
+              </div>
+            </button>
+
+            <button type="button" class="home-shortcut-btn" data-tab-shortcut="tab-history">
+              <span style="background: rgba(59, 130, 246, 0.12); color: #3b82f6; padding: 0.5rem; border-radius: 8px; display: inline-flex;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </span>
+              <div>
+                <div class="home-shortcut-title">History</div>
+                <div class="home-shortcut-sub">পূর্বের মেমো তালিকা</div>
+              </div>
+            </button>
+
+            <button type="button" class="home-shortcut-btn" data-tab-shortcut="tab-products">
+              <span style="background: rgba(16, 185, 129, 0.12); color: #10b981; padding: 0.5rem; border-radius: 8px; display: inline-flex;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                </svg>
+              </span>
+              <div>
+                <div class="home-shortcut-title">Products</div>
+                <div class="home-shortcut-sub">প্রোডাক্ট ও মূল্য তালিকা</div>
+              </div>
+            </button>
+
+            <button type="button" class="home-shortcut-btn" data-tab-shortcut="tab-report">
+              <span style="background: rgba(245, 158, 11, 0.12); color: #f59e0b; padding: 0.5rem; border-radius: 8px; display: inline-flex;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="20" x2="18" y2="10" />
+                  <line x1="12" y1="20" x2="12" y2="4" />
+                  <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+              </span>
+              <div>
+                <div class="home-shortcut-title">Reports</div>
+                <div class="home-shortcut-sub">দৈনিক বিক্রয় রিপোর্ট</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 1: Editor & Live Preview -->
+    <section id="tab-editor" class="tab-pane">
+      <div class="editor-grid">
+        <!-- Form Editor Column -->
+        <div class="editor-form-col">
+          <!-- Card: General Information -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+                <span id="lbl-card-general">সাধারণ তথ্য</span>
+              </h2>
+              <button type="button" id="btn-reset-form" class="btn btn-secondary btn-sm" title="ফর্ম খালি করুন">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                </svg>
+                <span id="lbl-btn-reset">রিসেট</span>
+              </button>
+            </div>
+
+            <div class="form-row two-cols">
+              <div class="form-group">
+                <label for="input-memo-no" class="form-label" id="lbl-memo-no">মেমো নং</label>
+                <input type="text" id="input-memo-no" class="form-input" placeholder="211026-01" required />
+              </div>
+              <div class="form-group">
+                <label for="input-date" class="form-label" id="lbl-date">তারিখ</label>
+                <input type="date" id="input-date" class="form-input" required />
+              </div>
+            </div>
+
+            <div class="form-row two-cols">
+              <div class="form-group">
+                <label for="input-customer-name" class="form-label" id="lbl-customer">গ্রাহকের নাম</label>
+                <input type="text" id="input-customer-name" class="form-input" placeholder="গ্রাহকের পুরো নাম লিখুন" />
+              </div>
+              <div class="form-group">
+                <label for="input-customer-mobile" class="form-label" id="lbl-mobile">মোবাইল</label>
+                <input type="tel" id="input-customer-mobile" class="form-input" inputmode="tel" placeholder="018XXXXXXXX" />
+                <span id="mobile-error-msg" style="display: none; font-size: 0.78rem; color: var(--danger); font-weight: 600; margin-top: 2px;"></span>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 0.65rem;">
+              <label for="input-customer-address" class="form-label" id="lbl-address">ঠিকানা</label>
+              <input type="text" id="input-customer-address" class="form-input" placeholder="গ্রাহকের ঠিকানা লিখুন" />
+            </div>
+          </div>
+
+          <!-- Card: Products List -->
+          <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+              <h2 class="card-title" style="margin-bottom: 0;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <path d="M16 10a4 4 0 0 1-8 0" />
+                </svg>
+                <span id="lbl-card-products">প্রোডাক্ট তালিকা</span>
+              </h2>
+              <button type="button" id="btn-open-catalog-picker" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 0.4rem; border-color: var(--primary); color: var(--primary); font-weight: 600;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                </svg>
+                <span id="lbl-btn-catalog-picker">ক্যাটালগ থেকে প্রোডাক্ট পিক করুন</span>
+              </button>
+            </div>
+
+            <div class="items-table-container">
+              <table class="editor-items-table">
+                <thead>
+                  <tr>
+                    <th style="width: 40px; text-align: center;" id="lbl-th-sl">ক্র.</th>
+                    <th id="lbl-th-product">প্রোডাক্টের নাম</th>
+                    <th style="width: 85px;" id="lbl-th-qty">পরিমাণ</th>
+                    <th style="width: 105px;" id="lbl-th-price">দাম (৳)</th>
+                    <th style="width: 95px;" id="lbl-th-total">মোট (৳)</th>
+                    <th style="width: 48px; text-align: center;"></th>
+                  </tr>
+                </thead>
+                <tbody id="editor-items-tbody">
+                  <!-- Dynamic Item Rows populated by app.js -->
+                </tbody>
+              </table>
+            </div>
+
+            <button type="button" id="btn-add-item" class="btn btn-outline btn-block">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span id="lbl-btn-add-item">নতুন প্রোডাক্ট যোগ করুন</span>
+            </button>
+          </div>
+
+          <!-- Card: Payments & Calculation -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+                  <line x1="12" y1="6" x2="12" y2="18" />
+                </svg>
+                <span id="lbl-card-payment">মূল্য ও পেমেন্ট হিসাব</span>
+              </h2>
+            </div>
+
+            <div class="form-row two-cols">
+              <div class="form-group">
+                <label for="input-discount" class="form-label" id="lbl-discount">ছাড় (৳)</label>
+                <input type="number" id="input-discount" class="form-input" min="0" step="any" inputmode="decimal" placeholder="0" />
+              </div>
+              <div class="form-group">
+                <label for="input-paid" class="form-label" id="lbl-paid">এডভ্যান্স পেমেন্ট (৳)</label>
+                <input type="number" id="input-paid" class="form-input" min="0" step="any" inputmode="decimal" placeholder="0" />
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 0.75rem;">
+              <label for="input-payment-method" class="form-label" id="lbl-payment-method">পেমেন্ট মাধ্যম (Payment Method)</label>
+              <select id="input-payment-method" class="form-input">
+                <option value="cash">নগদ (Cash)</option>
+                <option value="bkash">বিকাশ (bKash)</option>
+                <option value="nagad">নগদ অ্যাপ (Nagad)</option>
+                <option value="rocket">রকেট (Rocket)</option>
+                <option value="bank">ব্যাংক (Bank)</option>
+                <option value="cod">ক্যাশ অন ডেলিভারি (COD)</option>
+              </select>
+            </div>
+
+            <div class="calc-summary" style="margin-top: 1rem;">
+              <div class="calc-row">
+                <span id="lbl-subtotal">প্রোডাক্টের মূল বিল (উপমোট):</span>
+                <span id="val-subtotal" class="font-semibold">৳০.০০</span>
+              </div>
+              <div class="calc-row">
+                <span id="lbl-discount-display">ছাড়:</span>
+                <span id="val-discount" class="font-semibold">৳০.০০</span>
+              </div>
+              <div class="calc-row highlight">
+                <span id="lbl-grand-total">সর্বমোট:</span>
+                <span id="val-grand-total">৳০.০০</span>
+              </div>
+              <div class="calc-row">
+                <span id="lbl-paid-display">এডভ্যান্স পেমেন্ট:</span>
+                <span id="val-paid" class="font-semibold" style="color: var(--primary);">৳০.০০</span>
+              </div>
+              <div class="calc-row">
+                <span id="lbl-due-display">বাকি:</span>
+                <span id="val-due" class="font-semibold text-danger">৳০.০০</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card: Form Bottom Action (Save Button) -->
+          <div class="card" style="padding: 1.25rem;">
+            <button type="button" id="btn-save-memo" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.6rem; background: var(--primary); color: #fff; border-radius: 8px; box-shadow: 0 4px 14px rgba(15, 122, 74, 0.35);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+              </svg>
+              <span id="lbl-btn-save">মেমো সেভ করুন (Save Memo)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Preview Column -->
+        <div class="editor-preview-col">
+          <div class="preview-sticky-wrapper">
+            <div id="preview-container-card" class="preview-container-card collapsed">
+              <div class="preview-toolbar" id="preview-toolbar-header" style="cursor: pointer;" title="ক্লিক করে প্রিভিউ লুকান বা খুলুন">
+                <div class="preview-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0f7a4a" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  <span id="lbl-preview-title">লাইভ প্রিভিউ (A5 মেমো)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <button type="button" id="btn-toggle-preview" class="btn btn-secondary btn-sm" style="min-height: 32px; padding: 0.25rem 0.65rem; font-size: 0.85rem;" aria-expanded="false">
+                    <span id="lbl-toggle-preview">প্রিভিউ দেখুন</span>
+                    <svg id="icon-chevron-preview" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition: transform 0.2s;">
+                      <polyline points="18 15 12 9 6 15"></polyline>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Collapsed Teaser / Quick View Info -->
+              <div id="preview-collapsed-teaser" class="preview-collapsed-teaser" title="ক্লিক করে সম্পূর্ণ মেমো প্রিভিউ দেখুন">
+                <div class="preview-teaser-text">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0f7a4a" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                  <span id="teaser-memo-no">মেমো প্রস্তুত</span>
+                  <span style="color: var(--text-muted); font-weight: normal;">•</span>
+                  <span id="teaser-grand-total" style="color: var(--primary); font-weight: 700;">৳০.০০</span>
+                </div>
+                <span class="preview-teaser-sub" id="lbl-teaser-action">প্রিভিউ খুলতে ক্লিক করুন ▾</span>
+              </div>
+
+              <!-- Viewport Scaler wrapper -->
+              <div id="preview-viewport" class="preview-viewport">
+                <div id="preview-scaler" class="preview-scaler">
+                  <!-- The Memo Paper to render and export -->
+                  <div id="memo-paper">
+                    <!-- Green Header Band -->
+                    <div class="memo-header-band">
+                      <div id="memo-header-logo-box" class="memo-logo-box" style="display: none;">
+                        <img id="memo-header-logo-img" alt="Logo" />
+                      </div>
+                      <div class="memo-brand-details">
+                        <div class="memo-business-name">Jononi Enterprise And Healthcare</div>
+                        <div class="memo-business-sub">Address: 27 Road, Tongi, Gazipur</div>
+                        <div class="memo-business-sub">Mobile: +880 1848-383410</div>
+                      </div>
+                    </div>
+
+                    <!-- Memo Body -->
+                    <div class="memo-body">
+                      <!-- Centered Memo Title with Underline -->
+                      <div class="memo-title-section">
+                        <div id="pv-memo-title" class="memo-title-text">মেমো</div>
+                        <div class="memo-title-underline"></div>
+                      </div>
+
+                      <!-- Two-column info block -->
+                      <div class="memo-info-box">
+                        <div class="memo-info-item">
+                          <span id="pv-lbl-memo-no" class="memo-info-label">মেমো নং:</span>
+                          <span id="pv-val-memo-no" class="memo-info-val">211026-01</span>
+                        </div>
+                        <div class="memo-info-item">
+                          <span id="pv-lbl-date" class="memo-info-label">তারিখ:</span>
+                          <span id="pv-val-date" class="memo-info-val">২১/১০/২০২৬</span>
+                        </div>
+                        <div class="memo-info-item">
+                          <span id="pv-lbl-customer" class="memo-info-label">গ্রাহকের নাম:</span>
+                          <span id="pv-val-customer" class="memo-info-val">—</span>
+                        </div>
+                        <div class="memo-info-item">
+                          <span id="pv-lbl-mobile" class="memo-info-label">মোবাইল:</span>
+                          <span id="pv-val-mobile" class="memo-info-val">—</span>
+                        </div>
+                        <div class="memo-info-item">
+                          <span id="pv-lbl-address" class="memo-info-label">ঠিকানা:</span>
+                          <span id="pv-val-address" class="memo-info-val">—</span>
+                        </div>
+                      </div>
+
+                      <!-- Products Table -->
+                      <div class="memo-table-wrapper">
+                        <table class="memo-table">
+                          <thead>
+                            <tr>
+                              <th class="col-sl" id="pv-th-sl">ক্র.</th>
+                              <th id="pv-th-product">প্রোডাক্টের নাম</th>
+                              <th class="col-qty" id="pv-th-qty">পরিমাণ</th>
+                              <th class="col-price" id="pv-th-price">দাম</th>
+                              <th class="col-total" id="pv-th-total">মোট</th>
+                            </tr>
+                          </thead>
+                          <tbody id="pv-items-tbody">
+                            <!-- Injected dynamically -->
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <!-- Totals & Signature Block -->
+                      <div class="memo-summary-area">
+                        <div class="memo-signature-block">
+                          <div class="memo-sig-line"></div>
+                          <div id="pv-lbl-signature" class="memo-sig-text">কর্তৃপক্ষের স্বাক্ষর</div>
+                        </div>
+
+                        <div class="memo-totals-block">
+                          <div class="memo-total-row">
+                            <span id="pv-lbl-subtotal">উপমোট</span>
+                            <span id="pv-val-subtotal" class="memo-total-val">৳০.০০</span>
+                          </div>
+
+                          <div id="pv-row-discount" class="memo-total-row" style="display: none;">
+                            <span id="pv-lbl-discount">ছাড়</span>
+                            <span id="pv-val-discount" class="memo-total-val">৳০.০০</span>
+                          </div>
+
+                          <div class="memo-total-row grand-total">
+                            <span id="pv-lbl-grand-total">সর্বমোট</span>
+                            <span id="pv-val-grand-total" class="memo-total-val">৳০.০০</span>
+                          </div>
+
+                          <div id="pv-row-paid" class="memo-total-row" style="display: none;">
+                            <span id="pv-lbl-paid">এডভ্যান্স পেমেন্ট (<span id="pv-val-paymethod">নগদ</span>)</span>
+                            <span id="pv-val-paid" class="memo-total-val">৳০.০০</span>
+                          </div>
+
+                          <div id="pv-row-due" class="memo-total-row due-row" style="display: none;">
+                            <span id="pv-lbl-due">বাকি</span>
+                            <span id="pv-val-due" class="memo-total-val">৳০.০০</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Green Footer Band -->
+                    <div id="pv-footer-text" class="memo-footer-band">
+                      ধন্যবাদ। আল্লাহ আপনাকে দ্রুত সুস্থ করুন।
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Export & Share Actions Below Memo Preview -->
+              <div class="memo-preview-actions" style="padding: 1rem; border-top: 1px solid var(--border); background: var(--bg-card); display: flex; flex-direction: column; gap: 0.75rem;">
+                <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-align: center;">মেমো ডাউনলোড ও শেয়ার অপশন</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.65rem;">
+                  <button type="button" id="btn-download-png" class="btn btn-primary" style="gap: 0.4rem; padding: 0.65rem; font-size: 0.9rem; font-weight: 700;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    <span id="lbl-btn-png">ডাউনলোড (PNG)</span>
+                  </button>
+
+                  <button type="button" id="btn-download-pdf" class="btn btn-outline" style="gap: 0.4rem; padding: 0.65rem; font-size: 0.9rem; font-weight: 700; border-color: var(--primary); color: var(--primary);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <line x1="16" y1="13" x2="8" y2="13" />
+                      <line x1="16" y1="17" x2="8" y2="17" />
+                    </svg>
+                    <span id="lbl-btn-pdf">ডাউনলোড (PDF)</span>
+                  </button>
+
+                  <button type="button" id="btn-share-memo" class="btn btn-secondary" style="gap: 0.4rem; padding: 0.65rem; font-size: 0.9rem; font-weight: 700;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="18" cy="5" r="3" />
+                      <circle cx="6" cy="12" r="3" />
+                      <circle cx="18" cy="19" r="3" />
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                    </svg>
+                    <span id="lbl-btn-share">শেয়ার করুন</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: History & Stats -->
+    <section id="tab-history" class="tab-pane">
+      <div style="max-width: 1280px; margin: 0 auto;">
+        <!-- Header Title Banner -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+          <div>
+            <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span>ক্যাশ মেমো সেলস হিস্ট্রি (Memo History)</span>
+            </h2>
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 2px;">
+              সংরক্ষিত সকল মেমো, পরিশোধের স্ট্যাটাস ও গ্রাহকের বিবরণ সহজেই পরিচালনা করুন।
+            </p>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" data-tab-shortcut="tab-editor" style="gap: 0.4rem; padding: 0.6rem 1.1rem; font-weight: 700;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span>নতুন মেমো তৈরি করুন</span>
+          </button>
+        </div>
+
+        <!-- 4 Stat Summary Cards Grid -->
+        <div class="history-stats-grid-4" style="margin-bottom: 1.25rem;">
+          <div class="stat-card history-stat-card">
+            <div class="stat-icon" style="background: var(--primary-light); color: var(--primary);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+            </div>
+            <div>
+              <div id="stat-total-memos-count" class="stat-value">০</div>
+              <div class="stat-label">মোট মেমো সংখ্যা</div>
+            </div>
+          </div>
+
+          <div class="stat-card history-stat-card">
+            <div class="stat-icon" style="background: rgba(59, 130, 246, 0.12); color: #3b82f6;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23" />
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+              </svg>
+            </div>
+            <div>
+              <div id="stat-total-memos-sales" class="stat-value" style="color: #2563eb;">৳০.০০</div>
+              <div class="stat-label">সর্বমোট বিক্রয় (Total Sales)</div>
+            </div>
+          </div>
+
+          <div class="stat-card history-stat-card">
+            <div class="stat-icon" style="background: #ecfdf5; color: #059669;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div>
+              <div id="stat-total-memos-paid" class="stat-value" style="color: #059669;">৳০.০০</div>
+              <div class="stat-label">সংগৃহীত নগদ (Paid)</div>
+            </div>
+          </div>
+
+          <div class="stat-card history-stat-card">
+            <div class="stat-icon" style="background: #fef2f2; color: #dc2626;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+            <div>
+              <div id="stat-total-memos-due" class="stat-value" style="color: #dc2626;">৳০.০০</div>
+              <div class="stat-label">মোট বকেয়া (Due Amount)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search Bar and Status Filter Pills -->
+        <div class="card" style="padding: 1rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; gap: 0.85rem; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+            <div style="position: relative; flex: 1; min-width: 260px;">
+              <input type="text" id="history-search-input" class="form-input" placeholder="মেমো নং, গ্রাহকের নাম অথবা মোবাইল দিয়ে খুঁজুন..." style="padding-left: 2.6rem; font-weight: 500;" />
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </div>
+
+            <!-- Status Filter Pills -->
+            <div class="report-filter-pills" id="history-filter-pills" role="group" aria-label="History Filter">
+              <button type="button" class="filter-btn history-filter-btn active" data-filter="all" id="history-filter-all">
+                <span>সব মেমো (All)</span>
+              </button>
+              <button type="button" class="filter-btn history-filter-btn" data-filter="paid" id="history-filter-paid">
+                <span>✓ পরিশোধিত (Paid)</span>
+              </button>
+              <button type="button" class="filter-btn history-filter-btn" data-filter="due" id="history-filter-due">
+                <span>⚠ বকেয়া (Due)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- History Cards List / Grid -->
+        <div id="history-list" class="history-cards-container">
+          <!-- Populated dynamically by app.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB: Recycle Bin -->
+    <section id="tab-trash" class="tab-pane">
+      <div class="card">
+        <h2 class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          <span id="sb-lbl-trash">Recycle Bin (রিসাইকেল বিন)</span>
+        </h2>
+        <div id="trash-list" class="history-list" style="margin-top: 1rem;">
+          <!-- Populated dynamically by app.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB: Products Management -->
+    <section id="tab-products" class="tab-pane">
+      <div class="card" style="padding: 1.25rem;">
+        <!-- Header -->
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+          <div>
+            <h2 class="card-title" style="font-size: 1.25rem; font-weight: 800; color: var(--primary);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <path d="M16 10a4 4 0 0 1-8 0"></path>
+              </svg>
+              <span>Products Management (প্রোডাক্ট ম্যানেজমেন্ট)</span>
+            </h2>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">
+              ফার্মেসির সকল প্রোডাক্ট ক্যাটালগ ও মূল্য তালিকা পরিচালনা করুন
+            </div>
+          </div>
+          <button type="button" id="btn-open-add-product" class="btn btn-primary btn-sm" style="font-weight: 700; gap: 0.4rem; padding: 0.55rem 1rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>নতুন প্রোডাক্ট যোগ করুন</span>
+          </button>
+        </div>
+
+        <!-- Search & Category Filters -->
+        <div style="display: flex; gap: 0.85rem; margin-bottom: 1.25rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+          <div style="flex: 1; min-width: 260px; position: relative;">
+            <input type="text" id="product-search-input" class="form-input" placeholder="প্রোডাক্ট নাম বা জেনেরিক লিখে খুঁজুন..." style="padding-left: 2.5rem;" />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+
+          <!-- Category Filter Pills with Color Grading -->
+          <div class="report-filter-pills" id="product-category-filters" role="group" aria-label="Product Category Filter">
+            <button type="button" class="filter-btn product-filter-btn active" data-cat="all">সব (All)</button>
+            <button type="button" class="filter-btn product-filter-btn" data-cat="tablet">ট্যাবলেট</button>
+            <button type="button" class="filter-btn product-filter-btn" data-cat="capsule">ক্যাপসুল</button>
+            <button type="button" class="filter-btn product-filter-btn" data-cat="syrup">সিরাপ/অন্যান্য</button>
+          </div>
+
+          <div style="font-size: 0.88rem; color: var(--text-muted); font-weight: 700;" id="product-count-summary">
+            মোট প্রোডাক্ট: ০
+          </div>
+        </div>
+
+        <!-- Products Table -->
+        <div class="table-container" style="overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-md);">
+          <table class="memo-table products-management-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th style="width: 50px; text-align: center;">ক্র.</th>
+                <th>প্রোডাক্টের নাম (Product Name)</th>
+                <th>ক্যাটাগরি / জেনেরিক</th>
+                <th style="text-align: right; width: 140px;">নির্ধারিত মূল্য (৳)</th>
+                <th style="width: 80px; text-align: center;">ইউনিট</th>
+                <th style="text-align: center; width: 220px;">কার্যক্রম (Actions)</th>
+              </tr>
+            </thead>
+            <tbody id="products-tbody">
+              <!-- Injected dynamically by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: Profile (প্রোফাইল) -->
+    <section id="tab-profile" class="tab-pane">
+      <!-- Profile Hero Card -->
+      <div class="profile-hero-card">
+        <div class="profile-avatar-big" id="profile-logo-display">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0f7a4a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="4" />
+            <line x1="12" y1="8" x2="12" y2="16" />
+            <line x1="8" y1="12" x2="16" y2="12" />
+          </svg>
+        </div>
+        <div>
+          <div class="profile-meta-title">Jononi Enterprise And Healthcare</div>
+          <div class="profile-meta-sub">জননী ফার্মেসি • Tongi, Gazipur • Reg. Health Care</div>
+          <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+            <span class="status-pill paid">✓ সক্রিয় ফার্মেসি</span>
+            <span class="status-pill" style="background: var(--bg-page); border: 1px solid var(--border); color: var(--text-main);">
+              লাইসেন্সকৃত রিটেইল ড্রাগ স্টোর
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Legal & Pharmacist Details (Editable & Stored locally) -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            <span>ফার্মেসির অফিশিয়াল তথ্য ও লাইসেন্স</span>
+          </h2>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">লোকালে সংরক্ষিত হয়</span>
+        </div>
+
+        <form id="form-pharmacy-profile" onsubmit="event.preventDefault();">
+          <div class="form-row two-cols">
+            <div class="form-group">
+              <label class="form-label" for="profile-shop-name">প্রতিষ্ঠানের নাম (স্থায়ী)</label>
+              <input type="text" id="profile-shop-name" class="form-input" value="Jononi Enterprise And Healthcare" readonly style="opacity: 0.85; background: var(--bg-page);" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="profile-pharmacist-name">ফার্মাসিস্ট / স্বত্বাধিকারীর নাম</label>
+              <input type="text" id="profile-pharmacist-name" class="form-input" placeholder="ফার্মাসিস্টের নাম লিখুন" value="মো: হাবিবুর রহমান (Pharmacist)" />
+            </div>
+          </div>
+
+          <div class="form-row two-cols">
+            <div class="form-group">
+              <label class="form-label" for="profile-dl-no">ড্রাগ লাইসেন্স নং (Drug License No.)</label>
+              <input type="text" id="profile-dl-no" class="form-input" placeholder="যেমন: GAZI-DH/18429" value="GAZI-DH/18429" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="profile-trade-no">ট্রেড লাইসেন্স নং (Trade License No.)</label>
+              <input type="text" id="profile-trade-no" class="form-input" placeholder="যেমন: TRAD/GZP/04821" value="TRAD/GZP/04821" />
+            </div>
+          </div>
+
+          <div class="form-row two-cols">
+            <div class="form-group">
+              <label class="form-label" for="profile-phone">অফিশিয়াল মোবাইল নম্বর</label>
+              <input type="text" id="profile-phone" class="form-input" value="+880 1848-383410" readonly style="opacity: 0.85; background: var(--bg-page);" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="profile-hours">খোলার সময়সূচি (Business Hours)</label>
+              <input type="text" id="profile-hours" class="form-input" placeholder="যেমন: সকাল ৮:০০ - রাত ১১:৩০" value="সকাল ৮:০০ - রাত ১১:৩০ (প্রতিদিন)" />
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1.25rem;">
+            <label class="form-label" for="profile-address">ঠিকানা (Address)</label>
+            <input type="text" id="profile-address" class="form-input" value="Address: 27 Road, Tongi, Gazipur" readonly style="opacity: 0.85; background: var(--bg-page);" />
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            <button type="button" id="btn-save-profile" class="btn btn-primary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+              </svg>
+              <span>প্রোফাইল সংরক্ষণ করুন</span>
+            </button>
+            <span id="profile-save-hint" style="font-size: 0.85rem; color: var(--success); display: none;">✓ সংরক্ষিত হয়েছে</span>
+          </div>
+        </form>
+      </div>
+
+      <!-- Quick Contact & Location Card -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span>যোগাযোগ ও লোকেশন</span>
+          </h2>
+        </div>
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+          <a href="tel:+8801848383410" class="btn btn-outline" style="text-decoration: none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+            <span>সরাসরি কল করুন (+880 1848-383410)</span>
+          </a>
+
+          <a href="https://maps.google.com/?q=27+Road,+Tongi,+Gazipur" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="text-decoration: none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+              <line x1="8" y1="2" x2="8" y2="18"></line>
+              <line x1="16" y1="6" x2="16" y2="22"></line>
+            </svg>
+            <span>গুগল ম্যাপে দেখুন (Tongi, Gazipur)</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: Report (রিপোর্ট ও হিসাব) -->
+    <section id="tab-report" class="tab-pane">
+      <div class="report-filter-bar">
+        <div>
+          <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-bottom: 0.2rem;">
+            ফার্মেসি বিক্রয় ও মেমো রিপোর্ট
+          </h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            তৈরিকৃত সকল মেমোর মোট হিসাব, নগদ আদায়, বকেয়া ও প্রোডাক্ট রিপোর্ট
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <div class="report-filter-pills" role="group" aria-label="Report Time Filter">
+            <button type="button" class="filter-btn active" data-range="today" id="btn-report-today">আজ</button>
+            <button type="button" class="filter-btn" data-range="week" id="btn-report-week">৭ দিন</button>
+            <button type="button" class="filter-btn" data-range="month" id="btn-report-month">এই মাস</button>
+            <button type="button" class="filter-btn" data-range="all" id="btn-report-all">সর্বমোট</button>
+          </div>
+
+          <button type="button" id="btn-print-report" class="btn btn-outline btn-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+              <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            <span>রিপোর্ট প্রিন্ট</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Customer Purchase History Search Card -->
+      <div class="card" style="background: linear-gradient(135deg, rgba(15,122,74,0.04) 0%, rgba(59,130,246,0.04) 100%); border: 1px solid var(--border); margin-bottom: 1.25rem;">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>গ্রাহক অনুসন্ধান ও পূর্বের কেনাকাটার ইতিহাস (Customer Search)</span>
+          </h2>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">নাম বা মোবাইল নম্বর দিয়ে খুঁজুন</span>
+        </div>
+        <div style="position: relative; margin-bottom: 0.75rem;">
+          <input type="text" id="report-customer-search" class="form-input" placeholder="গ্রাহকের নাম বা মোবাইল নম্বর লিখুন (যেমন: রহিম বা 018...)" style="padding-left: 2.75rem; font-weight: 600;" />
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+        <div id="report-customer-results" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 380px; overflow-y: auto;">
+          <div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 1rem;">
+            কোনো গ্রাহক খুঁজতে নাম বা মোবাইল নম্বর টাইপ করুন।
+          </div>
+        </div>
+      </div>
+
+      <!-- Report Metrics Cards -->
+      <div class="report-stats-grid">
+        <div class="report-stat-card">
+          <div class="report-stat-icon primary">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+          </div>
+          <div class="report-stat-info">
+            <div class="report-stat-label">মোট মেমো সংখ্যা</div>
+            <div class="report-stat-val" id="rpt-total-memos">০</div>
+          </div>
+        </div>
+
+        <div class="report-stat-card">
+          <div class="report-stat-icon success">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+              <line x1="12" y1="6" x2="12" y2="18" />
+            </svg>
+          </div>
+          <div class="report-stat-info">
+            <div class="report-stat-label">সর্বমোট বিক্রয় (Gross Sales)</div>
+            <div class="report-stat-val" id="rpt-total-sales">৳০.০০</div>
+          </div>
+        </div>
+
+        <div class="report-stat-card">
+          <div class="report-stat-icon success">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <div class="report-stat-info">
+            <div class="report-stat-label">সংগৃহীত নগদ (Paid Amount)</div>
+            <div class="report-stat-val" id="rpt-total-paid">৳০.০০</div>
+          </div>
+        </div>
+
+        <div class="report-stat-card">
+          <div class="report-stat-icon danger">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          </div>
+          <div class="report-stat-info">
+            <div class="report-stat-label">মোট বকেয়া (Outstanding Due)</div>
+            <div class="report-stat-val" id="rpt-total-due" style="color: var(--danger);">৳০.০০</div>
+          </div>
+        </div>
+
+        <div class="report-stat-card">
+          <div class="report-stat-icon warning">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="19" y1="5" x2="5" y2="19"></line>
+              <circle cx="6.5" cy="6.5" r="2.5"></circle>
+              <circle cx="17.5" cy="17.5" r="2.5"></circle>
+            </svg>
+          </div>
+          <div class="report-stat-info">
+            <div class="report-stat-label">মোট ছাড় (Discounts)</div>
+            <div class="report-stat-val" id="rpt-total-discount">৳০.০০</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Selling Products Card -->
+      <div class="card" style="box-shadow: var(--shadow-sm); border: 1px solid var(--border);">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <h2 class="card-title" style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+              <path d="M4 22h16"/>
+              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+            </svg>
+            <span>সর্বাধিক বিক্রীত প্রোডাক্টসমূহ (Top Selling Products)</span>
+          </h2>
+          <span style="font-size: 0.8rem; font-weight: 600; background: var(--bg-page); padding: 0.25rem 0.65rem; border-radius: 20px; border: 1px solid var(--border); color: var(--text-muted);">
+            মেমোর আইটেম থেকে স্বয়ংক্রিয় হিসাব
+          </span>
+        </div>
+
+        <div class="report-table-wrapper">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th style="width: 70px; text-align: center;">র‍্যাংক</th>
+                <th>প্রোডাক্টের নাম ও বিবরণ</th>
+                <th style="width: 140px; text-align: center;">বিক্রিত সংখ্যা</th>
+                <th style="width: 150px; text-align: right;">মোট আয় (টাকা)</th>
+                <th style="text-align: center; width: 170px;">কার্যক্রম (Actions)</th>
+              </tr>
+            </thead>
+            <tbody id="rpt-top-products-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Recent Transactions in Selected Filter -->
+      <div class="card" style="box-shadow: var(--shadow-sm); border: 1px solid var(--border);">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <h2 class="card-title" style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span>নির্বাচিত সময়ের মেমো তালিকা</span>
+          </h2>
+          <span id="rpt-memos-count-pill" class="badge-count" style="font-size: 0.82rem; padding: 0.25rem 0.65rem;">
+            সর্বশেষ ১০ টি
+          </span>
+        </div>
+
+        <div class="report-table-wrapper">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th style="width: 170px;">মেমো নং ও তারিখ</th>
+                <th>গ্রাহক ও মোবাইল</th>
+                <th style="width: 110px; text-align: center;">আইটেম</th>
+                <th style="width: 130px; text-align: right;">সর্বমোট বিল</th>
+                <th style="width: 140px; text-align: center;">পরিশোধ অবস্থা</th>
+                <th style="width: 110px; text-align: center;">অ্যাকশন</th>
+              </tr>
+            </thead>
+            <tbody id="rpt-recent-memos-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: Setting (সেটিংস) -->
+    <section id="tab-settings" class="tab-pane">
+      <!-- Language Mode Card -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+            <span>মেমো ভাষা ও মোড (Language Settings)</span>
+          </h2>
+        </div>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+          আপনি যে মোড নির্বাচন করবেন, মেমোর সমস্ত লেবেল ও সংখ্যা সেই ভাষায় স্বয়ংক্রিয়ভাবে তৈরি হবে।
+        </p>
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+          <button type="button" id="settings-lang-bn" class="btn btn-primary">
+            <span>Bn (বাংলা মেমো)</span>
+          </button>
+          <button type="button" id="settings-lang-en" class="btn btn-outline">
+            <span>En (English Memo)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Theme Card -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+            <span>অ্যাপের থিম (Theme Appearance)</span>
+          </h2>
+        </div>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+          দিনের আলো বা রাতের কাজের সুবিধার্থে লাইট বা ডার্ক থিম নির্বাচন করুন। (মেমো কাগজ সর্বদা পরিষ্কার সাদা ব্যাকগ্রাউন্ডে প্রিন্ট হবে)।
+        </p>
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+          <button type="button" id="settings-theme-light" class="btn btn-outline">
+            <span>☀️ লাইট মোড (Light Mode)</span>
+          </button>
+          <button type="button" id="settings-theme-dark" class="btn btn-secondary">
+            <span>🌙 ডার্ক মোড (Dark Mode)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Custom Logo Card -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+            <span id="lbl-settings-logo-title">কাস্টম লোগো / Logo</span>
+          </h2>
+        </div>
+
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;" id="lbl-logo-desc">
+          আপনার দোকানের লোগো আপলোড করুন। এটি মেমো হেডারে এবং অ্যাপের শীর্ষে প্রদর্শিত হবে।
+        </p>
+
+        <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+          <div class="logo-preview-box">
+            <img id="settings-logo-preview" style="display: none;" alt="Custom Logo" />
+            <svg id="settings-logo-placeholder" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <input type="file" id="logo-file-input" accept="image/*" style="display: none;" />
+            <button type="button" id="btn-upload-logo" class="btn btn-primary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              <span>লোগো আপলোড করুন</span>
+            </button>
+
+            <button type="button" id="btn-remove-logo" class="btn btn-danger-outline" style="display: none;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+              <span>লোগো মুছুন</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Memo Footer Note Setting -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>মেমোর নিচের প্রার্থনা / শুভেচ্ছা বার্তা (Footer Wish)</span>
+          </h2>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="settings-footer-wish">মেমোর সবুজ ফুটার ব্যান্ডের লেখা</label>
+          <input type="text" id="settings-footer-wish" class="form-input" value="ধন্যবাদ। আল্লাহ আপনাকে দ্রুত সুস্থ করুন।" />
+        </div>
+        <div style="margin-top: 0.75rem;">
+          <button type="button" id="btn-save-footer-wish" class="btn btn-secondary btn-sm">
+            <span>ফুটার বার্তা আপডেট করুন</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Storage Health Status & Backup / Restore (Integrated into Settings) -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+            </svg>
+            <span>গুগল ফায়ারবেস ক্লাউড স্টোরেজ অবস্থা</span>
+          </h2>
+          <span class="status-pill paid" id="firebase-cloud-badge">☁️ ক্লাউড সংযুক্ত (jononi-pharmacy)</span>
+        </div>
+
+        <div style="background: rgba(15, 122, 74, 0.05); border: 1px solid rgba(15, 122, 74, 0.2); border-radius: var(--radius-md); padding: 0.85rem 1rem; margin-bottom: 1.25rem; font-size: 0.88rem; line-height: 1.6;">
+          <div><strong>Firebase Project ID:</strong> <code style="color: var(--primary); font-weight: 700;">jononi-pharmacy</code></div>
+          <div style="margin-top: 0.25rem;"><strong>Firestore Database:</strong> <code style="color: #0284c7; font-size: 0.82rem;">ai-studio-jononipharmacy-2c1ab253-1b22-43e8-89bb-079473b8c49b</code></div>
+          <div style="margin-top: 0.25rem; color: var(--text-muted);">সমস্ত মেমো, প্রোডাক্ট এবং সেটিংস সরাসরি গুগল ফায়ারবেস ক্লাউডে সুরক্ষিত রাখা হয়। কোনো ডেটা লোকাল ডিভাইসে রাখা হয় না।</div>
+        </div>
+
+        <div class="report-stats-grid" style="margin-bottom: 0;">
+          <div class="report-stat-card">
+            <div class="report-stat-icon primary">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              </svg>
+            </div>
+            <div class="report-stat-info">
+              <div class="report-stat-label">ক্লাউডে মোট মেমো</div>
+              <div class="report-stat-val" id="backup-total-memos">০ টি</div>
+            </div>
+          </div>
+
+          <div class="report-stat-card">
+            <div class="report-stat-icon success">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+                <line x1="6" y1="6" x2="6.01" y2="6" />
+                <line x1="6" y1="18" x2="6.01" y2="18" />
+              </svg>
+            </div>
+            <div class="report-stat-info">
+              <div class="report-stat-label">স্টোরেজ আর্কিটেকচার</div>
+              <div class="report-stat-val" style="font-size: 1.05rem; color: var(--success);">Google Firestore</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Google Sign-in / Cloud Account Controls inside Settings -->
+        <div style="margin-top: 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span id="firebase-status-dot" class="firebase-status-dot"></span>
+            <span style="font-size: 0.9rem; font-weight: 600;">অ্যাকাউন্ট স্ট্যাটাস:</span>
+            <span id="firebase-banner-text" style="font-size: 0.85rem; color: var(--text-muted);">লোড হচ্ছে...</span>
+          </div>
+          <div id="firebase-auth-container" style="display: flex; align-items: center; gap: 0.5rem;">
+            <button type="button" id="btn-cloud-login" class="google-auth-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.04 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/></svg>
+              <span>গুগল সাইন-ইন (Cloud Sync)</span>
+            </button>
+            <div id="cloud-user-info" class="cloud-user-badge" style="display: none;">
+              <span id="cloud-user-name">jesweettoptens@gmail.com</span>
+              <button type="button" id="btn-cloud-logout" class="btn-signout-cloud" title="লগআউট">লগআউট</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Backup & Restore Actions -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+              <line x1="12" y1="22.08" x2="12" y2="12" />
+            </svg>
+            <span>সম্পূর্ণ ব্যাকআপ ও রিস্টোর</span>
+          </h2>
+        </div>
+
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+          আপনার সমস্ত মেমো ইতিহাস, প্রোফাইল তথ্য, তারিখ ভিত্তিক সিরিয়াল কাউন্টার এবং আপলোড করা লোগো এক ফাইলে ডাউনলোড করুন অথবা আগের ব্যাকআপ ফাইল থেকে রিস্টোর করুন।
+        </p>
+
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+          <button type="button" id="btn-backup-json-tab" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <span>ব্যাকআপ ডাউনলোড করুন (JSON)</span>
+          </button>
+
+          <input type="file" id="restore-file-input-tab" accept=".json" style="display: none;" />
+          <button type="button" id="btn-restore-json-tab" class="btn btn-secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            <span>ব্যাকআপ থেকে রিস্টোর করুন</span>
+          </button>
+        </div>
+
+        <div class="backup-note" style="margin-top: 1.25rem;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span>ডেটা ১০০% নিরাপদে গুগল ফায়ারবেস ক্লাউড ডেটাবেজে সংরক্ষিত থাকে। প্রয়োজনে আপনি যেকোনো সময় সমস্ত ডেটার ব্যাকআপ ডাউনলোড করে রাখতে পারেন।</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 7: App info (অ্যাপ ইনফো) -->
+    <section id="tab-appinfo" class="tab-pane">
+      <div class="card">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <h2 class="card-title" style="margin: 0;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+            <span>Jononi Pharmacy - অ্যাপ ইনফরমেশন</span>
+          </h2>
+          <span style="background: var(--primary-light); color: var(--primary); border: 1px solid rgba(15,122,74,0.3); font-weight: 700; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.9rem;">
+            Version 2.5.0 (Pro)
+          </span>
+        </div>
+
+        <!-- App Version Information Box -->
+        <div style="background: var(--bg-page); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">অ্যাপ্লিকেশন ভার্সন</div>
+            <div style="font-size: 1.35rem; font-weight: 800; color: var(--primary); margin-top: 2px;">v2.5.0</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">বিল্ড: 2026.10.PRO</div>
+          </div>
+
+          <div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">বিল্ডিং ডেট (Building Date)</div>
+            <div style="font-size: 1.15rem; font-weight: 800; color: #0284c7; margin-top: 2px;">২২ অক্টোবর ২০২৬</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">22 October 2026 (Official Build)</div>
+          </div>
+
+          <div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">বিল্ড স্ট্যাটাস</div>
+            <div style="font-size: 1rem; font-weight: 700; color: var(--text-main); margin-top: 4px; display: flex; align-items: center; gap: 0.35rem;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+              <span>Production Stable</span>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">গুগল ফায়ারবেস ক্লাউড</div>
+          </div>
+
+          <div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">মালিকানা ও ফার্মেসি</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Jononi Enterprise</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Tongi, Gazipur</div>
+          </div>
+        </div>
+
+        <!-- Building & System Specifications Card -->
+        <div style="background: linear-gradient(135deg, rgba(15,122,74,0.04) 0%, rgba(2,132,199,0.04) 100%); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
+          <div style="font-size: 0.9rem; font-weight: 700; color: var(--primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>সিস্টেম ও বিল্ডিং বিবরণ (Build & Architecture Specifications)</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem; font-size: 0.88rem;">
+            <div>
+              <span style="color: var(--text-muted);">বিল্ডিং ডেট (Building Date):</span>
+              <strong style="margin-left: 0.35rem; color: #0284c7;">২২ অক্টোবর ২০২৬ (22 October 2026)</strong>
+            </div>
+            <div>
+              <span style="color: var(--text-muted);">বিল্ড আর্কিটেকচার:</span>
+              <strong style="margin-left: 0.35rem; color: var(--text-main);">PWA & Google Firebase Cloud</strong>
+            </div>
+            <div>
+              <span style="color: var(--text-muted);">ভার্সন কোড:</span>
+              <strong style="margin-left: 0.35rem; color: var(--text-main);">v2.5.0-PRO-20261022</strong>
+            </div>
+            <div>
+              <span style="color: var(--text-muted);">এনভায়রনমেন্ট:</span>
+              <strong style="margin-left: 0.35rem; color: var(--success);">✓ Production Ready Stable</strong>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size: 0.95rem; line-height: 1.7; color: var(--text-main); margin-bottom: 1rem;">
+          <p>
+            <strong>"Jononi Pharmacy"</strong> হলো একটি দ্রুতগামী, আধুনিক ডিজিটাল ক্যাশ মেমো তৈরির প্রফেশনাল ওয়েব অ্যাপ্লিকেশন, যা বিশেষভাবে <strong>Jononi Enterprise And Healthcare</strong> ফার্মেসির জন্য তৈরি করা হয়েছে।
+          </p>
+        </div>
+
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <div style="font-size: 0.88rem; color: var(--text-muted); font-weight: 600;">
+              © 2026 Jononi Enterprise And Healthcare. 27 Road, Tongi, Gazipur.
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap;">
+              <span>Developed By</span>
+              <a href="https://www.facebook.com/iam.zubayerahmedr" target="_blank" rel="noopener noreferrer" class="developer-link" title="Developed By Zubayer Ahmedr (Facebook)">
+                <span>Zubayer Ahmedr</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              </a>
+            </div>
+          </div>
+          <div>
+            <button type="button" id="appinfo-install-btn" class="btn btn-outline btn-sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <span>হোম স্ক্রিনে ইনস্টল করুন</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- App Global Footer -->
+    <footer class="app-global-footer">
+      <div class="footer-container">
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+          <span style="font-weight: 700; color: var(--primary);">Jononi Pharmacy</span>
+          <span>•</span>
+          <span>Jononi Enterprise And Healthcare</span>
+          <span>•</span>
+          <span>Tongi, Gazipur</span>
+        </div>
+        <div class="footer-dev-credit">
+          <span>Developed By</span>
+          <a href="https://www.facebook.com/iam.zubayerahmedr" target="_blank" rel="noopener noreferrer" class="developer-link" title="Developed By Zubayer Ahmedr (Facebook)">
+            <span>Zubayer Ahmedr</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          </a>
+        </div>
+      </div>
+    </footer>
+  </main>
+</div> <!-- End app-main-wrapper -->
+</div> <!-- End app-shell -->
+
+  <!-- Add/Edit Product Modal -->
+  <div id="product-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 480px; width: 100%;">
+      <h3 id="product-modal-title" class="modal-title">Add New Product</h3>
+      <form id="product-form" style="margin-top: 1rem;">
+        <input type="hidden" id="product-edit-id" />
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label class="form-label" style="display: block; font-weight: 600; margin-bottom: 0.35rem; font-size: 0.9rem;">Product Name *</label>
+          <input type="text" id="modal-prod-name" class="form-input" placeholder="e.g. Napa Extra 500mg" required />
+        </div>
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label class="form-label" style="display: block; font-weight: 600; margin-bottom: 0.35rem; font-size: 0.9rem;">Category / Generic</label>
+          <input type="text" id="modal-prod-category" class="form-input" placeholder="e.g. Paracetamol / Tablet" />
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label" style="display: block; font-weight: 600; margin-bottom: 0.35rem; font-size: 0.9rem;">Default Price (৳) *</label>
+            <input type="number" step="0.01" min="0" id="modal-prod-price" class="form-input" placeholder="0.00" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="display: block; font-weight: 600; margin-bottom: 0.35rem; font-size: 0.9rem;">Unit</label>
+            <input type="text" id="modal-prod-unit" class="form-input" placeholder="Pcs / Box / Strip" value="Pcs" />
+          </div>
+        </div>
+        <div class="modal-actions" style="display: flex; gap: 1rem; justify-content: flex-end;">
+          <button type="button" id="product-modal-cancel" class="btn btn-secondary">Cancel</button>
+          <button type="submit" id="product-modal-save" class="btn btn-primary">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- View Product Modal (কালার গ্র্যাডিং সহ ভিউ মডাল) -->
+  <div id="view-product-modal" class="modal-overlay">
+    <div class="modal-card view-product-modal-card" style="max-width: 520px; width: 100%; padding: 0; overflow: hidden; border-radius: var(--radius-lg);">
+      <!-- Color-Graded Header Banner -->
+      <div class="view-prod-header-banner" style="background: linear-gradient(135deg, #065f46 0%, #0f7a4a 55%, #10b981 100%); color: #ffffff; padding: 1.25rem 1.5rem; position: relative;">
+        <button type="button" id="view-product-modal-close" class="modal-close-icon" aria-label="Close" style="position: absolute; right: 1rem; top: 1rem; background: rgba(255,255,255,0.2); border: none; color: #ffffff; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        <div style="display: flex; align-items: center; gap: 0.85rem; margin-bottom: 0.5rem;">
+          <span style="background: rgba(255,255,255,0.22); padding: 0.4rem; border-radius: 8px; display: inline-flex;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+          </span>
+          <span style="font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.9;">
+            Jononi Pharmacy Catalog
+          </span>
+        </div>
+
+        <h3 id="view-prod-name" style="font-size: 1.4rem; font-weight: 800; margin: 0; line-height: 1.25; color: #ffffff;">
+          Product Name
+        </h3>
+        <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+          <span id="view-prod-category-badge" class="badge-cat badge-cat-tablet" style="background: rgba(255,255,255,0.9); border: none; font-weight: 800; color: #065f46;">
+            Category
+          </span>
+          <span style="font-size: 0.82rem; background: rgba(0,0,0,0.2); padding: 0.2rem 0.6rem; border-radius: 12px; font-weight: 600;">
+            ✓ সক্রিয় ক্যাটালগ
+          </span>
+        </div>
+      </div>
+
+      <!-- Color Graded Content Body -->
+      <div style="padding: 1.25rem 1.5rem; background: var(--bg-card);">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.85rem; margin-bottom: 1.25rem;">
+          <!-- Price Card with Gradient -->
+          <div style="background: linear-gradient(135deg, rgba(15,122,74,0.08) 0%, rgba(16,185,129,0.16) 100%); border: 1px solid rgba(15,122,74,0.3); border-radius: var(--radius-md); padding: 0.85rem;">
+            <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+              নির্ধারিত বিক্রয় মূল্য
+            </div>
+            <div id="view-prod-price" style="font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-top: 0.25rem;">
+              ৳ 0.00
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+              প্রতি একক নির্ধারিত রেট
+            </div>
+          </div>
+
+          <!-- Unit Card with Gradient -->
+          <div style="background: linear-gradient(135deg, rgba(2,132,199,0.08) 0%, rgba(14,165,233,0.16) 100%); border: 1px solid rgba(2,132,199,0.3); border-radius: var(--radius-md); padding: 0.85rem;">
+            <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+              প্যাকেজিং ইউনিট
+            </div>
+            <div id="view-prod-unit" style="font-size: 1.5rem; font-weight: 800; color: #0284c7; margin-top: 0.25rem;">
+              Pcs
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+              পরিমাপের ধরন
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Specification Rows -->
+        <div style="background: var(--bg-page); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.65rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border); padding-bottom: 0.5rem;">
+            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">জেনেরিক / ক্যাটাগরি:</span>
+            <span id="view-prod-category-text" style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">—</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border); padding-bottom: 0.5rem;">
+            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">ফার্মেসি আইডি:</span>
+            <span id="view-prod-id" style="font-size: 0.85rem; font-family: monospace; font-weight: 700; color: var(--text-muted);">prod_id</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">দ্রুত অ্যাকশন:</span>
+            <span style="font-size: 0.82rem; color: var(--primary); font-weight: 700;">ক্লিক করে মেমোতে যোগ করুন</span>
+          </div>
+        </div>
+
+        <!-- Action Footer -->
+        <div style="display: flex; gap: 0.65rem; justify-content: flex-end; margin-top: 1.25rem; flex-wrap: wrap;">
+          <button type="button" id="btn-view-prod-close" class="btn btn-secondary btn-sm" style="padding: 0.5rem 1rem;">
+            <span>বন্ধ করুন</span>
+          </button>
+          <button type="button" id="btn-view-prod-edit" class="btn btn-outline btn-sm" style="padding: 0.5rem 1rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            <span>এডিট করুন</span>
+          </button>
+          <button type="button" id="btn-view-prod-add" class="btn btn-primary btn-sm" style="padding: 0.5rem 1.15rem; font-weight: 700;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>মেমোতে সরাসরি যোগ করুন</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div id="confirm-modal" class="modal-overlay">
+    <div class="modal-card">
+      <h3 id="modal-title" class="modal-title">নিশ্চিত করুন</h3>
+      <p id="modal-message" class="modal-message">আপনি কি নিশ্চিত?</p>
+      <div class="modal-actions">
+        <button type="button" id="modal-cancel-btn" class="btn btn-secondary">বাতিল</button>
+        <button type="button" id="modal-confirm-btn" class="btn btn-primary">হ্যাঁ, এগিয়ে যান</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- iOS PWA Install Guide Modal -->
+  <div id="ios-guide-modal" class="modal-overlay">
+    <div class="modal-card">
+      <h3 class="modal-title">iPhone / iPad এ ইনস্টল করুন</h3>
+      <div class="modal-message" style="font-size: 0.95rem; line-height: 1.6;">
+        <p>১. Safari ব্রাউজারের নিচের <strong>শেয়ার বোতামে (Share)</strong> চাপুন।</p>
+        <p style="margin-top: 0.5rem;">২. মেনুটি স্ক্রোল করে <strong>"Add to Home Screen"</strong> (হোম স্ক্রিনে যোগ করুন) নির্বাচন করুন।</p>
+        <p style="margin-top: 0.5rem;">৩. উপরে <strong>"Add"</strong> এ চাপুন। এরপর এটি একটি নেটিভ অ্যাপের মতো কাজ করবে!</p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="ios-guide-close-btn" class="btn btn-primary btn-block">বুঝেছি</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Catalog Product Picker Modal (For New Memo) -->
+  <div id="catalog-picker-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 680px; width: 100%; max-height: 85vh; display: flex; flex-direction: column; padding: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border);">
+        <h3 class="modal-title" style="margin: 0; font-size: 1.15rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text-main);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+          </svg>
+          <span id="lbl-catalog-modal-title">ক্যাটালগ থেকে প্রোডাক্ট নির্বাচন করুন</span>
+        </h3>
+        <button type="button" id="catalog-picker-close" class="btn btn-outline btn-sm" style="padding: 0.25rem 0.6rem; border-radius: 6px;" title="বন্ধ করুন">✕</button>
+      </div>
+
+      <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <input type="text" id="catalog-picker-search" class="form-input" style="flex: 1; min-width: 200px;" placeholder="প্রোডাক্টের নাম বা ক্যাটাগরি লিখুন..." />
+      </div>
+
+      <div id="catalog-picker-list" style="flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.85rem; padding-right: 0.25rem; min-height: 200px; align-content: start;">
+        <!-- Dynamically filled with product selection cards -->
+      </div>
+
+      <div style="margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+        <span style="font-size: 0.85rem; color: var(--text-muted);" id="catalog-picker-count">প্রোডাক্ট চাপলে মেমোতে সরাসরি যোগ হবে</span>
+        <button type="button" id="catalog-picker-done" class="btn btn-primary btn-sm">সম্পন্ন (Close)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Memo Details Modal -->
+  <div id="view-memo-modal" class="modal-overlay">
+    <div class="modal-card view-memo-modal-card" style="max-width: 860px; width: 95%; max-height: 92vh; display: flex; flex-direction: column; padding: 1.25rem;">
+      <!-- Modal Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); margin-bottom: 0.75rem;">
+        <div>
+          <h3 class="modal-title" style="margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; color: var(--primary);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <span id="view-modal-title">ক্যাশ মেমো ভিউ (Full A5 Memo View)</span>
+          </h3>
+          <div style="font-size: 0.8rem; color: var(--text-muted);" id="view-modal-subtitle">মেমো বিবরণ ও প্রিন্ট অপশন</div>
+        </div>
+        <button type="button" id="view-memo-modal-close" class="btn btn-outline btn-sm" style="padding: 0.3rem 0.65rem; border-radius: 6px;" title="বন্ধ করুন">✕</button>
+      </div>
+
+      <!-- Scrollable Paper Container -->
+      <div style="flex: 1; overflow-y: auto; overflow-x: auto; background: #475569; padding: 1rem; border-radius: var(--radius-md); display: flex; justify-content: center; align-items: flex-start; min-height: 380px;">
+        <div id="view-memo-scaler" style="transform-origin: top center;">
+          <div id="view-memo-paper-container">
+            <!-- Dynamically populated copy of memo paper -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Bar -->
+      <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.65rem;">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button type="button" id="btn-view-modal-print" class="btn btn-primary btn-sm" style="gap: 0.35rem; font-weight: 700;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            <span>প্রিন্ট করুন</span>
+          </button>
+          <button type="button" id="btn-view-modal-png" class="btn btn-outline btn-sm" style="gap: 0.35rem; font-weight: 700; border-color: var(--primary); color: var(--primary);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+            <span>PNG</span>
+          </button>
+          <button type="button" id="btn-view-modal-pdf" class="btn btn-outline btn-sm" style="gap: 0.35rem; font-weight: 700; border-color: #3b82f6; color: #2563eb;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+            <span>PDF</span>
+          </button>
+          <button type="button" id="btn-view-modal-share" class="btn btn-secondary btn-sm" style="gap: 0.35rem; font-weight: 700;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            <span>শেয়ার</span>
+          </button>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button type="button" id="btn-view-modal-edit" class="btn btn-primary btn-sm" style="gap: 0.35rem; font-weight: 700; background: var(--primary-hover);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            <span>এডিট করুন</span>
+          </button>
+          <button type="button" id="btn-view-modal-close-bottom" class="btn btn-secondary btn-sm">বন্ধ করুন</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <datalist id="saved-products-datalist"></datalist>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Full-screen Animated Reload Overlay -->
+  <div id="animation-overlay" class="reload-animation-overlay">
+    <div class="reload-anim-container">
+      <div class="reload-logo-glow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="60" height="60">
+          <rect x="3" y="3" width="18" height="18" rx="4" />
+          <line x1="12" y1="8" x2="12" y2="16" />
+          <line x1="8" y1="12" x2="16" y2="12" />
+        </svg>
+      </div>
+
+      <div id="animation-text-wrapper" class="reload-text-wrapper">
+        <div id="animation-text" class="reload-text-letters"></div>
+      </div>
+
+      <div class="reload-sub-text">Jononi Enterprise And Healthcare</div>
+
+      <div class="reload-progress-bar">
+        <div class="reload-progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Logic (ES Module) -->
+  <script type="module" src="/app.js?v=2.7.0"></script>
+</body>
+</html>

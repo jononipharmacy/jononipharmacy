@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f7a4a" />
+      <stop offset="100%" stop-color="#0a5231" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.18" />
+    </filter>
+  </defs>
+
+  <!-- Background with rounded corners (safe zone compliant) -->
+  <rect width="512" height="512" rx="112" fill="url(#primaryGrad)" />
+
+  <!-- Inner Subtle Ring -->
+  <rect x="24" y="24" width="464" height="464" rx="92" fill="none" stroke="#ffffff" stroke-opacity="0.15" stroke-width="4" />
+
+  <!-- Pharmacy Cross & Care Symbol -->
+  <g filter="url(#shadow)">
+    <!-- Central Cross Base -->
+    <rect x="216" y="120" width="80" height="272" rx="20" fill="#ffffff" />
+    <rect x="120" y="216" width="272" height="80" rx="20" fill="#ffffff" />
+
+    <!-- Center Accent Heart / Leaf Emblem -->
+    <circle cx="256" cy="256" r="32" fill="#0f7a4a" />
+    <path d="M256 242 C252 236 242 236 238 244 C234 252 246 262 256 270 C266 262 278 252 274 244 C270 236 260 236 256 242 Z" fill="#ffffff" />
+  </g>
+</svg>
